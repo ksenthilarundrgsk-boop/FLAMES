@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d28d9"><title>FLAMES – Name Game</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px 14px;display:flex;justify-content:center;align-items:flex-start;background:linear-gradient(145deg,#f5eaff,#fff0f6);font-family:system-ui,Arial,sans-serif;color:#241b35}
+main{width:min(100%,520px)}.card{background:white;border-radius:24px;padding:26px 22px;box-shadow:0 14px 45px #44205b1a}header{text-align:center;margin-bottom:22px}.logo{font-size:42px;font-weight:900;letter-spacing:5px;color:#6d28d9;margin:0}.sub{color:#6b6475;margin:6px 0;font-size:14px}
+label{display:block;font-weight:700;margin:17px 0 7px}input{width:100%;padding:14px 15px;border:1.5px solid #ded5e8;border-radius:12px;font-size:16px}input:focus{outline:2px solid #6d28d9}
+button{border:0;border-radius:13px;padding:14px 18px;font-size:16px;font-weight:750;cursor:pointer}.primary{width:100%;margin-top:20px;color:white;background:linear-gradient(100deg,#6d28d9,#ec4899)}.secondary{color:#6d28d9;background:#f2eaff}
+.result{display:none;margin-top:22px;border-radius:18px;background:#fbf7ff;padding:20px;text-align:center;border:1px solid #eee3fa}.result.show{display:block}.emoji{font-size:42px}.result h2{margin:4px 0;color:#6d28d9;font-size:27px}.result p{color:#51475e;line-height:1.55}.letters{display:flex;gap:7px;justify-content:center;margin:16px 0}.letter{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;background:#eee4fa;color:#6d28d9;font-weight:900}.letter.active{color:white;background:#ec4899}.actions{display:flex;gap:10px}.actions button{flex:1}.note,footer{text-align:center;color:#8b8294;font-size:12px;line-height:1.5}.note{margin-top:18px}footer{padding:15px}
+</style></head><body><main><section class="card">
+<header><p class="logo">FLAMES</p><p class="sub">A fun name game for friends</p></header>
+<form id="game"><label for="one">Enter the first name</label><input id="one" maxlength="40" placeholder="e.g. Arun" required>
+<label for="two">Enter the second name</label><input id="two" maxlength="40" placeholder="e.g. Meena" required>
+<button class="primary" type="submit">Find the FLAMES result</button></form>
+<section id="result" class="result" aria-live="polite"><div id="emoji" class="emoji">🤝</div><h2 id="title"></h2><p id="message"></p><div id="letters" class="letters"></div>
+<div class="actions"><button class="secondary" id="share" type="button">Share result</button><button class="secondary" id="again" type="button">Try again</button></div></section>
+<p class="note">This is only a light-hearted word game. The result is for entertainment, not a real prediction about relationships or the future.</p></section><footer>FLAMES Name Game · Made for fun</footer></main>
+<script>
+// OWNER SETTINGS: Edit these six messages to customise the app.
+const outcomes=[
+{k:'F',title:'Friends',emoji:'🤝',message:'A cheerful friendship makes every day brighter!'},
+{k:'L',title:'Love',emoji:'💗',message:'A little kindness and care make connections special.'},
+{k:'A',title:'Affection',emoji:'😊',message:'Warmth, care and appreciation bring people closer.'},
+{k:'M',title:'Marriage',emoji:'💍',message:'This is just a playful FLAMES result—not a prediction!'},
+{k:'E',title:'Enemy',emoji:'⚡',message:'Every disagreement is a chance to practise patience and understanding.'},
+{k:'S',title:'Sister',emoji:'🌸',message:'A sweet bond filled with care, support and fun!'}];
+const form=document.getElementById('game'),result=document.getElementById('result');let shareText='';
+function clean(s){return s.toLowerCase().replace(/[^a-z]/g,'')}
+function calculate(a,b){let x=clean(a).split(''),y=clean(b).split('');if(!x.length||!y.length)return null;
+for(let i=x.length-1;i>=0;i--){let j=y.indexOf(x[i]);if(j!==-1){x.splice(i,1);y.splice(j,1)}}
+let count=x.length+y.length||1,letters=['F','L','A','M','E','S'],i=0;
+while(letters.length>1){i=(i+count-1)%letters.length;letters.splice(i,1)}return letters[0]}
+form.addEventListener('submit',e=>{e.preventDefault();let a=document.getElementById('one').value.trim(),b=document.getElementById('two').value.trim();if(!clean(a)||!clean(b)){alert('Please enter names using English letters.');return}
+let item=outcomes.find(o=>o.k===calculate(a,b));document.getElementById('emoji').textContent=item.emoji;document.getElementById('title').textContent=item.title;document.getElementById('message').textContent=item.message;
+document.getElementById('letters').innerHTML=outcomes.map(o=>`<span class="letter ${o.k===item.k?'active':''}">${o.k}</span>`).join('');
+shareText=`FLAMES result for ${a} + ${b}: ${item.title} ${item.emoji}\n${item.message}\nJust a fun name game!`;result.classList.add('show');result.scrollIntoView({behavior:'smooth',block:'nearest'})});
+document.getElementById('again').onclick=()=>{form.reset();result.classList.remove('show');document.getElementById('one').focus()};
+document.getElementById('share').onclick=async()=>{try{if(navigator.share)await navigator.share({title:'FLAMES result',text:shareText});else if(navigator.clipboard){await navigator.clipboard.writeText(shareText);alert('Result copied!')}else alert(shareText)}catch(e){}};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script></body></html>
